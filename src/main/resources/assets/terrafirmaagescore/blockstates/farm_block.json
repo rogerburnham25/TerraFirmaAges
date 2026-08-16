@@ -1,0 +1,10 @@
+{
+    "variants": {
+        "type=bottom": {
+          "model": "terrafirmaagescore:block/farm_block"
+        },
+        "type=top": {
+          "model": "terrafirmaagescore:block/farm_block_top"
+        }
+    }
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "half=lower": {
+      "model": "terrafirmaagescore:block/town_center_statue_bottom"
+    },
+    "half=upper": {
+      "model": "terrafirmaagescore:block/town_center_statue_top"
+    }
+  }
+}
