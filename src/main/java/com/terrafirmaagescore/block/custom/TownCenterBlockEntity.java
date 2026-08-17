@@ -37,6 +37,7 @@ public class TownCenterBlockEntity extends BlockEntity {
     public String cleanName = (this.town_name == null || this.town_name.isEmpty()) ? "unnamed_town" : this.town_name;
     public Path exportDir = FMLPaths.GAMEDIR.get().resolve("colonies");
     public File file = exportDir.resolve(cleanName + ".json").toFile();
+    public Boolean named = false;
     // private File Colony;
 
     public TownCenterBlockEntity(BlockPos pos, BlockState state) {

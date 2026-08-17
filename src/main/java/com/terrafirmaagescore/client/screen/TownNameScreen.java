@@ -15,14 +15,21 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import com.terrafirmaagescore.network.UpdateTownNamePayload;
 import net.minecraft.world.level.Level;
 import java.io.File;
+import java.nio.file.Files;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.StringWidget;
+
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.bus.api.SubscribeEvent;
 
 public class TownNameScreen extends Screen {
     private EditBox inputField;
     private Button submitButton;
-    public Boolean named;
     public static String ColonyName;
+    private StringWidget currentName;
     public final TownCenterBlockEntity blockEntity;
-    public File townFile = new TownCenterBlockEntity(file);
+    private static int messageDelay = 0;
+    private static String pendingName = null;
 
     public TownNameScreen(TownCenterBlockEntity blockEntity) {
         super(Component.literal("Set Town Name"));
@@ -31,7 +38,8 @@ public class TownNameScreen extends Screen {
 
     @Override
     protected void init() {
-        if (!named) {
+        System.out.println(blockEntity.named == true);
+        if (blockEntity.named == false) {
             super.init();
 
             this.inputField = new EditBox(this.font, this.width / 2 - 100, this.height / 2 - 10, 200, 20, Component.literal("Input"));
@@ -50,19 +58,53 @@ public class TownNameScreen extends Screen {
                 20
             )
             .build();
-            
-            Boolean named = true;
-            this.addRenderableWidget(this.submitButton);
-        } else if (named) {
-            try {
-                String content = File.readString(file.toPath());
-                String minifiedJson = content.relpaceAll("\\s", " ").trim();
 
-                MinecraftClient client = MinecraftClient.getInstance();
+            this.addRenderableWidget(this.submitButton);
+            
+            blockEntity.named = true;
+            System.out.println(blockEntity.named == true);
+        } else if (blockEntity.named == true) {
+            try {
+                super.init();
+
+                this.inputField = new EditBox(this.font, this.width / 2 - 100, this.height / 2 - 10, 200, 20, Component.literal("Input"));
+                this.inputField.setMaxLength(256);
+                this.addRenderableWidget(this.inputField);
+                this.setInitialFocus(this.inputField);
+
+                this.submitButton = Button.builder(
+                    Component.literal("Submit"),
+                    button -> this.submit()
+                )
+                .bounds(
+                    this.width / 2 - 100,
+                    this.height / 2 + 20,
+                    200,
+                    20
+                )
+                .build();
+
+                this.addRenderableWidget(this.submitButton);
+
+                String content = Files.readString(blockEntity.file.toPath());
+                String minifiedJson = content.replaceAll("\\s", " ").trim();
+
+                this.currentName = new StringWidget(
+                    this.width / 2 - 100,
+                    this.height / 2 - 35,
+                    200,
+                    20,
+                    Component.literal("Current Town Name: " + minifiedJson),
+                    this.font
+                );
+
+                this.addRenderableWidget(this.currentName);
+
+                Minecraft client = minecraft.getInstance();
                 if (client.player != null) {
-                    client.player.sendChatMessage(minifiedJson, null);
+                    //client.player.sendSystemMessage(Component.literal("Town renamed to " + minifiedJson));
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -73,12 +115,25 @@ public class TownNameScreen extends Screen {
         Level level = this.blockEntity.getLevel();
         BlockPos pos = this.blockEntity.getBlockPos();
         String count = "0";
+
         if (level != null && level.getBlockEntity(pos) instanceof TownCenterBlockEntity blockEntity) {
-            count = String.valueOf(Town_Center_Statue.colonistsInColony(level, pos));
-            PacketDistributor.sendToServer(new UpdateTownNamePayload(this.blockEntity.getBlockPos(), ColonyName, count));
-            // PacketDistributor.sendToServer(new UpdatePopulationPayload(this.blockEntity.getBlockPos()));
+            count = String.valueOf(
+                Town_Center_Statue.colonistsInColony(level, pos)
+            );
+
+            PacketDistributor.sendToServer(
+                new UpdateTownNamePayload(
+                    this.blockEntity.getBlockPos(),
+                    ColonyName,
+                    count
+                )
+            );
+
+            pendingName = ColonyName;
+            messageDelay = 20; // 20 ticks = 1 second
+
             this.onClose();
-        };
+        }
     }
 
     @Override
@@ -87,5 +142,24 @@ public class TownNameScreen extends Screen {
         super.render(graphics, mouseX, mouseY, partialTick);
         
         graphics.drawCenteredString(this.font, this.title, this.width / 2, this.height / 2 - 55, 0xFFFFFF);
+    }
+
+    @SubscribeEvent
+    public static void onClientTick(ClientTickEvent.Post event) {
+        if (messageDelay > 0) {
+            messageDelay--;
+
+            if (messageDelay == 0 && pendingName != null) {
+                Minecraft client = Minecraft.getInstance();
+
+                if (client.player != null) {
+                    client.player.sendSystemMessage(
+                        Component.literal("Town renamed to " + pendingName)
+                    );
+                }
+
+                pendingName = null;
+            }
+        }
     }
 }
