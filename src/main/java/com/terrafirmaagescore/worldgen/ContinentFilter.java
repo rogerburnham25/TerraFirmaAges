@@ -47,52 +47,64 @@ public class ContinentFilter {
         Random continentRandom = new Random(continentHash + (plant_id * 31L));
 
         if (temp < 8.0f) {
-            int maxCrops = 3;
+            return checkCrop(plant_id, new ArrayList<>(List.of(1, 3, 4, 5, 6, 8, 20, 23)), continentRandom);
+            // int maxCrops = 3;
 
-            List<Integer> coldCrops = new ArrayList<>(List.of(1, 3, 4, 5, 6, 8, 20, 23));
-            if (!coldCrops.contains(plant_id)) return false;
+            // List<Integer> coldCrops = new ArrayList<>(List.of(1, 3, 4, 5, 6, 8, 20, 23));
+            // if (!coldCrops.contains(plant_id)) return false;
 
-            Collections.shuffle(coldCrops, continentRandom);
+            // Collections.shuffle(coldCrops, continentRandom);
 
-            List<Integer> allowedSelection = coldCrops.subList(0, Math.min(maxCrops, coldCrops.size()));
-            return allowedSelection.contains(plant_id);
+            // List<Integer> allowedSelection = coldCrops.subList(0, Math.min(maxCrops, coldCrops.size()));
+            // return allowedSelection.contains(plant_id);
         }
 
         if (temp >= 6.0f && temp <= 12.0f) {
-            int maxCrops = 3;
+            return checkCrop(plant_id, new ArrayList<>(List.of(2, 14, 18,  24, 25, 28)), continentRandom);
+            // int maxCrops = 3;
 
-            List<Integer> coolCrops = new ArrayList<>(List.of(2, 14, 18,  24, 25, 28));
-            if (!coolCrops.contains(plant_id)) return false;
+            // List<Integer> coolCrops = new ArrayList<>(List.of(2, 14, 18,  24, 25, 28));
+            // if (!coolCrops.contains(plant_id)) return false;
 
-            Collections.shuffle(coolCrops, continentRandom);
+            // Collections.shuffle(coolCrops, continentRandom);
 
-            List<Integer> allowedSelection = coolCrops.subList(0, Math.min(maxCrops, coolCrops.size()));
-            return allowedSelection.contains(plant_id);
+            // List<Integer> allowedSelection = coolCrops.subList(0, Math.min(maxCrops, coolCrops.size()));
+            // return allowedSelection.contains(plant_id);
         }
 
         if (temp >= 12.5f && temp <= 18.0f) {
-            int maxCrops = 3;
+            return checkCrop(plant_id, new ArrayList<>(List.of(8, 10, 11, 12, 13, 15, 19, 27)), continentRandom);
+            // int maxCrops = 3;
 
-            List<Integer> warmCrops = new ArrayList<>(List.of(8, 10, 11, 12, 13, 15, 19, 27));
-            if (!warmCrops.contains(plant_id)) return false;
+            // List<Integer> warmCrops = new ArrayList<>(List.of(8, 10, 11, 12, 13, 15, 19, 27));
+            // if (!warmCrops.contains(plant_id)) return false;
 
-            Collections.shuffle(warmCrops, continentRandom);
+            // Collections.shuffle(warmCrops, continentRandom);
 
-            List<Integer> allowedSelection = warmCrops.subList(0, Math.min(maxCrops, warmCrops.size()));
-            return allowedSelection.contains(plant_id);
+            // List<Integer> allowedSelection = warmCrops.subList(0, Math.min(maxCrops, warmCrops.size()));
+            // return allowedSelection.contains(plant_id);
         }
 
         if (temp > 18.0f) {
-            int maxCrops = 3;
+            return checkCrop(plant_id, new ArrayList<>(List.of(7, 16, 17, 21, 22, 26, 29)), continentRandom);
+            // int maxCrops = 3;
 
-            List<Integer> hotCrops = new ArrayList<>(List.of(7, 16, 17, 21, 22, 26, 29));
-            if (!hotCrops.contains(plant_id)) return false;
+            // List<Integer> hotCrops = new ArrayList<>(List.of(7, 16, 17, 21, 22, 26, 29));
+            // if (!hotCrops.contains(plant_id)) return false;
 
-            Collections.shuffle(hotCrops, continentRandom);
+            // Collections.shuffle(hotCrops, continentRandom);
 
-            List<Integer> allowedSelection = hotCrops.subList(0, Math.min(maxCrops, hotCrops.size()));
-            return allowedSelection.contains(plant_id);
+            // List<Integer> allowedSelection = hotCrops.subList(0, Math.min(maxCrops, hotCrops.size()));
+            // return allowedSelection.contains(plant_id);
         }
         return false;
+    }
+
+    private static boolean checkCrop(int plant_id, List<Integer> cropPool, Random random) {
+        if (!cropPool.contains(plant_id)) return false;
+
+        Collections.shuffle(cropPool, random);
+        List<Integer> allowedSelection = cropPool.subList(0, Math.min(3, cropPool.size()));
+        return allowedSelection.contains(plant_id);
     }
 }
