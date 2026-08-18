@@ -18,6 +18,7 @@ import java.io.File;
 import java.nio.file.Files;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.StringWidget;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -25,6 +26,8 @@ import net.neoforged.bus.api.SubscribeEvent;
 public class TownNameScreen extends Screen {
     private EditBox inputField;
     private Button submitButton;
+    private Button yesButton;
+    private Button noButton;
     public static String ColonyName;
     private StringWidget currentName;
     public final TownCenterBlockEntity blockEntity;
@@ -37,7 +40,7 @@ public class TownNameScreen extends Screen {
     }
 
     @Override
-    protected void init() {
+    public void init() {
         System.out.println(blockEntity.named == true);
         if (blockEntity.named == false) {
             super.init();
@@ -67,39 +70,33 @@ public class TownNameScreen extends Screen {
             try {
                 super.init();
 
-                this.inputField = new EditBox(this.font, this.width / 2 - 100, this.height / 2 - 10, 200, 20, Component.literal("Input"));
-                this.inputField.setMaxLength(256);
-                this.addRenderableWidget(this.inputField);
-                this.setInitialFocus(this.inputField);
-
-                this.submitButton = Button.builder(
-                    Component.literal("Submit"),
-                    button -> this.submit()
+                this.yesButton = Button.builder(
+                    Component.literal("Yes, Rename"),
+                    button -> this.yes()
                 )
                 .bounds(
-                    this.width / 2 - 100,
+                    this.width / 2 - 200,
                     this.height / 2 + 20,
                     200,
                     20
                 )
                 .build();
 
-                this.addRenderableWidget(this.submitButton);
-
-                String content = Files.readString(blockEntity.file.toPath());
-                String minifiedJson = content.replaceAll("\\s", " ").trim();
-
-                this.currentName = new StringWidget(
-                    this.width / 2 - 100,
-                    this.height / 2 - 35,
+                this.noButton = Button.builder(
+                    Component.literal("Cancel Rename"),
+                    button -> this.onClose()
+                )
+                .bounds(
+                    this.width / 2 - 200,
+                    this.height / 2 - 20,
                     200,
-                    20,
-                    Component.literal("Current Town Name: " + minifiedJson),
-                    this.font
-                );
+                    20
+                )
+                .build();
 
-                this.addRenderableWidget(this.currentName);
-
+                this.addRenderableWidget(this.yesButton);
+                this.addRenderableWidget(this.noButton);
+                
                 Minecraft client = minecraft.getInstance();
                 if (client.player != null) {
                     //client.player.sendSystemMessage(Component.literal("Town renamed to " + minifiedJson));
@@ -107,6 +104,49 @@ public class TownNameScreen extends Screen {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public void yes() {
+        try {
+            this.removeWidget(this.yesButton);
+            this.removeWidget(this.noButton);
+
+            this.inputField = new EditBox(this.font, this.width / 2 - 100, this.height / 2 - 10, 200, 20, Component.literal("Input"));
+            this.inputField.setMaxLength(256);
+
+            this.addRenderableWidget(this.inputField);
+            this.setInitialFocus(this.inputField);
+
+            this.submitButton = Button.builder(
+                Component.literal("Submit"),
+                button -> this.submit()
+            )
+            .bounds(
+                this.width / 2 - 100,
+                this.height / 2 + 20,
+                200,
+                20
+            )
+            .build();
+
+            this.addRenderableWidget(this.submitButton);
+
+            String content = Files.readString(blockEntity.file.toPath());
+            String minifiedJson = content.replaceAll("\\s", " ").trim();
+
+            this.currentName = new StringWidget(
+                this.width / 2 - 100,
+                this.height / 2 - 35,
+                200,
+                20,
+                Component.literal("Current Town Name: " + minifiedJson),
+                this.font
+            );
+
+            this.addRenderableWidget(this.currentName);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -161,5 +201,18 @@ public class TownNameScreen extends Screen {
                 pendingName = null;
             }
         }
+    }
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == InputConstants.KEY_RETURN ||
+            keyCode == InputConstants.KEY_NUMPADENTER) {
+
+            if (this.inputField != null) {
+                this.submit();
+                return true;
+            }
+        }
+
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
 }
