@@ -9,16 +9,8 @@ import com.mojang.logging.LogUtils;
 import com.terrafirmaagescore.tags.block.ModBlockTagProvider;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.MapColor;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -26,17 +18,15 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.ModContainer;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import com.terrafirmaagescore.worldgen.placement.PlacementModifiers;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.HolderLookup;
 import com.terrafirmaagescore.block.entity.ModBlockEntities;
-//import com.terrafirmaagescore.block.custom.farm_block;
+import com.terrafirmaagescore.block.custom.Bonfire;
 
 import com.terrafirmaagescore.block.custom.Farm_Block;
 import com.terrafirmaagescore.block.custom.Town_Center_Statue;
@@ -47,12 +37,8 @@ import com.terrafirmaagescore.network.UpdateTownNamePayload;
 import com.terrafirmaagescore.network.ServerPacketHandler;
 //import com.terrafirmaagescore.network.UpdatePopulationPayload;
 
-import net.neoforged.neoforge.registries.DeferredBlock;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredItem;
 //import net.neoforged.neoforge.registries.DeferredBlockEntities;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
-import net.minecraft.client.renderer.entity.EntityRenderers;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod("terrafirmaagescore")
@@ -73,12 +59,15 @@ public class TerraFirmaAgesCore {
     public TerraFirmaAgesCore(IEventBus modEventBus, ModContainer modContainer) {
         Farm_Block.BLOCKS.register(modEventBus);
         Farm_Block.ITEMS.register(modEventBus);
+        Bonfire.BLOCKS.register(modEventBus);
+        Bonfire.ITEMS.register(modEventBus);
         Town_Center_Statue.BLOCKS.register(modEventBus);
         Town_Center_Statue.ITEMS.register(modEventBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         PlacementModifiers.PLACEMENT_MODIFIERS.register(modEventBus);
         // FORCE CLASSLOADING CHECK: Tells Java to read your block arrays immediately!
         try {Class.forName(com.terrafirmaagescore.block.custom.Farm_Block.class.getName()); } catch (Exception e) {}
+        try {Class.forName(com.terrafirmaagescore.block.custom.Bonfire.class.getName()); } catch (Exception e) {}
         try {Class.forName(com.terrafirmaagescore.block.custom.Town_Center_Statue.class.getName()); } catch (Exception e) {}
 
         modEventBus.addListener(this::registerPackets);

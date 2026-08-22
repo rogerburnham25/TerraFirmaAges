@@ -3,28 +3,28 @@ package com.terrafirmaagescore.block.custom;
 import com.terrafirmaagescore.TerraFirmaAgesCore;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.neoforged.bus.api.IEventBus;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.SlabType;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.SlabBlock;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.core.BlockPos;
-import org.jetbrains.annotations.Nullable;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.core.Direction;
 
 public class Farm_Block extends SlabBlock{
 
     public Farm_Block(BlockBehaviour.Properties properties) {
         super(properties);
+    }
+    
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        BlockState baseState = super.getStateForPlacement(context);
+        if (baseState != null) {
+            return baseState.setValue(TYPE, SlabType.BOTTOM);
+        }
+        return this.defaultBlockState().setValue(TYPE, SlabType.BOTTOM);
     }
 
     public static final DeferredRegister.Blocks BLOCKS =

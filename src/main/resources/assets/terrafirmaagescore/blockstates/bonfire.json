@@ -1,7 +1,7 @@
 {
   "variants": {
     "type=bottom": {
-    "model": "terrafirmaagescore:block/farm_block"
+    "model": "terrafirmaagescore:block/bonfire"
     }
   }
 }
