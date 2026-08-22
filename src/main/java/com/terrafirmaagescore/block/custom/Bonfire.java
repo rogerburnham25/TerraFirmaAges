@@ -17,11 +17,29 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import com.terrafirmaagescore.block.entity.ModBlockEntities;
+import com.terrafirmaagescore.block.entity.BonfireBlockEntity;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.tags.ItemTags;
 
-public class Bonfire extends SlabBlock{
+public class Bonfire extends SlabBlock implements EntityBlock {
+    public static final BooleanProperty LIT = BlockStateProperties.LIT;
 
     public Bonfire(BlockBehaviour.Properties properties) {
         super(properties);
+        this.registerDefaultState(this.stateDefinition.any().setValue(TYPE, SlabType.BOTTOM).setValue(WATERLOGGED, false).setValue(LIT, false));
     }
 
     @Override
@@ -35,6 +53,10 @@ public class Bonfire extends SlabBlock{
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        if (!state.getValue(LIT)) {
+            return; 
+        
+        }
         double x = pos.getX() + 0.5D;
         double y = pos.getY() + 0.25D; 
         double z = pos.getZ() + 0.5D;
@@ -65,6 +87,60 @@ public class Bonfire extends SlabBlock{
             );
         }
     }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
+        if (heldItem.is(ItemTags.LOGS_THAT_BURN)) {
+            if (!level.isClientSide) {
+                BlockEntity be = level.getBlockEntity(pos);
+                if (be instanceof BonfireBlockEntity BonfireBlockEntity) {
+                    BonfireBlockEntity.addFuel(1200);
+
+                    if (!player.isCreative()) {
+                        heldItem.shrink(1);
+                    }
+
+                    if (!state.getValue(LIT)) {
+                        level.setBlock(pos, state.setValue(LIT, true), 3);
+                    }
+                }
+            }
+            return InteractionResult.SUCCESS;
+        }
+        return InteractionResult.PASS;
+    }
+
+    @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new BonfireBlockEntity(pos, state);
+    }
+
+    @Override
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        if (level.isClientSide || !state.getValue(LIT)) {
+            return null;
+        }
+    
+    // Instead of using createTickerHelper, manually verify the BlockEntity type matches
+        return type == ModBlockEntities.BONFIRE.get() ? (lvl, pos, st, be) -> {
+            if (be instanceof BonfireBlockEntity bonfireBe) {
+                BonfireBlockEntity.serverTick(lvl, pos, st, bonfireBe);
+            }
+        } : null;
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(LIT); // Registers the LIT property
+    }
+
+    @Override
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
+    }
+
 
     public static final DeferredRegister.Blocks BLOCKS =
             DeferredRegister.createBlocks(TerraFirmaAgesCore.MODID);

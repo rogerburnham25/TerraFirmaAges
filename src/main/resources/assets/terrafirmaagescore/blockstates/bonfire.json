@@ -1,7 +1,6 @@
 {
   "variants": {
-    "type=bottom": {
-    "model": "terrafirmaagescore:block/bonfire"
-    }
+    "lit=false": { "model": "terrafirmaagescore:block/bonfire_unlit" },
+    "lit=true": { "model": "terrafirmaagescore:block/bonfire_lit" }
   }
 }

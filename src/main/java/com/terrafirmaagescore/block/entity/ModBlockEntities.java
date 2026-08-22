@@ -3,7 +3,6 @@ package com.terrafirmaagescore.block.entity; // Adjust package to match your str
 import com.terrafirmaagescore.block.custom.PerimeterDetectorBlockEntity;
 import com.terrafirmaagescore.block.custom.Farm_Block; // Adjust to your blocks registry file
 import com.terrafirmaagescore.block.custom.Town_Center_Statue;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -18,6 +17,13 @@ public class ModBlockEntities {
             BLOCK_ENTITIES.register("perimeter_detector", () ->
                     BlockEntityType.Builder.of(PerimeterDetectorBlockEntity::new, Farm_Block.FARM_BLOCK.get()).build(null)
         );
+
+        public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<BonfireBlockEntity>> BONFIRE =
+            BLOCK_ENTITIES.register("bonfire_block_entity", () ->
+                    BlockEntityType.Builder.of(BonfireBlockEntity::new, 
+                            com.terrafirmaagescore.block.custom.Bonfire.BONFIRE.get()
+                    ).build(null)
+            );
 
         public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TownCenterBlockEntity>> COLONY =
             BLOCK_ENTITIES.register("colony", () ->
