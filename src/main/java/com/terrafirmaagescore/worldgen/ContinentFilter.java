@@ -52,6 +52,16 @@ public class ContinentFilter {
             int finalId = CropTemperature(plantUniqueHash, temp, continentHash);
 
             if (finalId != plantUniqueHash) {
+                BlockState currentstate = level.getBlockState(pos);
+                BlockState floorState = level.getBlockState(pos.below());
+
+                if (!currentstate.getFluidState().isEmpty()) {
+                    return false;
+                }
+                
+                if (!floorState.getFluidState().isEmpty() || floorState.isAir()) {
+                    return false; // Stop! The ground is liquid or empty air.
+                }
                 // 1. Find a valid replacement block state from your allowed pool
                 var allowedBlock = BuiltInRegistries.BLOCK.stream()
                     .filter(block -> BuiltInRegistries.BLOCK.getKey(block).getNamespace().equals("tfc"))

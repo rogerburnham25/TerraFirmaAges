@@ -1,56 +1,34 @@
 package com.terrafirmaagescore.block.custom;
 
-import com.terrafirmaagescore.block.custom.CityRadiusBlock;
+
 //import com.terrafirmaagescore.block.custom.CityRadiusBlockEntity;
 import com.terrafirmaagescore.TerraFirmaAgesCore;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.core.BlockPos;
 import org.jetbrains.annotations.Nullable;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import java.util.concurrent.TimeUnit;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.network.PacketDistributor;
 import com.terrafirmaagescore.client.screen.TownNameScreen;
 import net.minecraft.client.Minecraft;
-import com.terrafirmaagescore.block.custom.TownCenterBlockEntity;
-import net.minecraft.world.level.block.EntityBlock;
 import com.terrafirmaagescore.entity.custom.NeolithicColonistEntity;
 import net.minecraft.world.phys.AABB;
-import com.terrafirmaagescore.entity.ModEntities;
 import java.util.List;
 
 
@@ -116,13 +94,13 @@ public class Town_Center_Statue extends Block implements EntityBlock {
                 return state.getValue(HALF) == DoubleBlockHalf.LOWER ? pos.above() : pos.below();
         }
 
-        private static boolean territoriesOverlap(Level level, BlockPos newPos) {
+        public static boolean territoriesOverlap(Level level, BlockPos newPos) {
                 int COLONY_RADIUS = 100;
                 int searchRadius = COLONY_RADIUS * 2;
                 int squaredRadius = searchRadius * searchRadius;
 
                 int newX = newPos.getX();
-                int newY = newPos.getY();
+                //int newY = newPos.getY();
                 int newZ = newPos.getZ();
 
                 for (BlockPos pos : BlockPos.betweenClosed(
