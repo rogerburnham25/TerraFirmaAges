@@ -1,60 +1,99 @@
 package com.terrafirmaagescore.block.custom;
 
-import net.minecraft.core.Direction;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Queue;
-import java.util.LinkedList;
-import com.terrafirmaagescore.block.entity.ModBlockEntities;
-import com.terrafirmaagescore.block.custom.Farm_Block;
-import com.terrafirmaagescore.TerraFirmaAgesCore;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import com.terrafirmaagescore.client.screen.TownNameScreen;
-import net.minecraft.network.chat.Component;
-import net.minecraft.client.Minecraft;
+import net.minecraft.world.level.Level;
+import java.util.List;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+
+import com.terrafirmaagescore.entity.custom.NeolithicColonistEntity;
+
 import net.neoforged.fml.loading.FMLPaths;
 import java.io.BufferedWriter;
 import java.io.File;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-import java.util.*;
 
 public class TownCenterBlockEntity extends BlockEntity {
     private String town_name = "";
-    private String population = "";
-    public String cleanName = (this.town_name == null || this.town_name.isEmpty()) ? "unnamed_town" : this.town_name;
-    public Path exportDir = FMLPaths.GAMEDIR.get().resolve("colonies");
-    public File file = exportDir.resolve(cleanName + ".json").toFile();
+    private int population;
     public Boolean named = false;
+
+    public Path exportDir = FMLPaths.GAMEDIR.get().resolve("colonies");
+    public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     // private File Colony;
 
     public TownCenterBlockEntity(BlockPos pos, BlockState state) {
         super(com.terrafirmaagescore.block.entity.ModBlockEntities.COLONY.get(), pos, state);
     }
 
-    public String getTownName() {
-        return this.town_name;
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = super.getUpdateTag(registries);
+        tag.putString("TownName", this.town_name);
+        tag.putInt("TownPopulation", this.population);
+        return tag;
     }
 
-    public String updateTownNameAndSave(String ColonyName, String count) {
-        this.town_name = ColonyName;
-        this.population = count;
-        this.setChanged();
-        this.exportDataToTextFile(); 
-        return this.town_name;
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
+
+    @Override
+    public void onDataPacket(net.minecraft.network.Connection connection, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider registries) {
+        CompoundTag tag = packet.getTag();
+        if (tag != null) {
+            this.loadAdditional(tag, registries);
+        }
+    }
+
+    public void setTownName(String town_name) {
+        this.town_name = town_name;
+    }
+
+    // 3. Getter method to retrieve the name dynamically
+    public String getTownName() { 
+        return this.town_name; 
+    }
+
+    // 4. Setter for population tracking
+    public void setPopulation(int population) {
+        this.population = population;
+    }
+
+    public static int colonistsInColony(Level level, BlockPos newPos) {
+        int COLONY_RADIUS = 100;
+        double squaredRadius = (double) COLONY_RADIUS * COLONY_RADIUS;
+
+        AABB searchBox = new AABB(newPos).inflate(COLONY_RADIUS, 10, COLONY_RADIUS);
+        List<? extends NeolithicColonistEntity> colonists = level.getEntitiesOfClass(
+            NeolithicColonistEntity.class,
+                searchBox,
+                colonist -> true
+            );
+
+            int population = 0;
+
+            for (NeolithicColonistEntity colonist : colonists) {
+                double distanceSquared = colonist.distanceToSqr(newPos.getX(), newPos.getY(), newPos.getZ());
+                if (distanceSquared <= squaredRadius) {
+                    population++;
+                }
+            }
+        return population;
+    } 
     // public String updatePopulationAndSave() {
     //     this.population = count;
     //     this.setChanged();
@@ -64,50 +103,74 @@ public class TownCenterBlockEntity extends BlockEntity {
     
 
     public void exportDataToTextFile() {
+        
         if (this.level == null || this.level.isClientSide) {
             return;
         }
+        
+        this.town_name = getTownName();
+        String cleanName = (this.town_name == null || this.town_name.isEmpty()) ? "unnamed_town" : this.town_name;
+        this.population = colonistsInColony(this.level, this.worldPosition);
 
-        if (cleanName == "unnamed_town") {
-            try {
-                String jsonPayload = "{\n" + "\"town_name\": \"" + this.town_name + "\",\n \"population\": " + this.population + "\n}";
+        try {
+            TownData data = new TownData(this.town_name, this.population);
+            String safeFileName = cleanName.replaceAll("[^a-zA-Z0-9_\\-]", "");
+            File file = exportDir.resolve(safeFileName + ".json").toFile();
 
-                if (file.getParentFile() != null && !file.getParentFile().exists()) {
-                    file.getParentFile().mkdirs();
-                }
-                try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
-                    writer.write(jsonPayload);
+            if (file.getParentFile() != null && !file.getParentFile().exists()) {
+                file.getParentFile().mkdirs();
+            }
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                GSON.toJson(data, writer);
                 System.out.println("Successfully saved town name to file!");
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.out.println("Failed to save town name to file!");
             }
-        } else if (cleanName != "unnamed_town") {
-            try {
-                String content = Files.readString(file.toPath());
-                String minifiedJson = content.replaceAll("\\s", " ").trim();
-
-                Minecraft client = Minecraft.getInstance();
-                if (client.player != null) {
-                    //client.player.sendMessage(minifiedJson);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("Failed to save town name to file!");
         }
-        // file.getParentFile().mkdirs();
+    }
+
+    public TownData importDataFromTextFile() {
+        this.town_name = getTownName();
+        if (this.town_name == null || this.town_name.isEmpty() || "unnamed_town".equals(this.town_name)) {
+            System.out.println("Town is currently unnamed. Skipping file import.");
+            return null;
+        }
+
+        String safeFileName = this.town_name.replaceAll("[^a-zA-Z0-9_\\-]", "");
+        File activeFile = exportDir.resolve(safeFileName + ".json").toFile();
+
+        if (!activeFile.exists()) {
+            System.out.println("Town data does not exist for: " + safeFileName);
+            return null;
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(activeFile))) {
+            TownData data = GSON.fromJson(reader, TownData.class);
+            System.out.println("Read file successfully");
+            return data;
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.out.println("File read failed");
+            return null;
+        }
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        tag.putString("town_name", this.town_name != null ? this.town_name : "");
+        tag.putString("TownName", this.town_name);
+        tag.putInt("TownPopulation", this.population);
     }
 
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
-        this.town_name = tag.getString("town_name");
+        if (tag.contains("TownName")) {
+            this.town_name = tag.getString("TownName");
+        }
+        if (tag.contains("TownPopulation")) {
+            this.population = tag.getInt("TownPopulation");
+        }
     }
 }

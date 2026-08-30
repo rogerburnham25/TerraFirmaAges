@@ -169,7 +169,21 @@ public class Town_Center_Statue extends Block implements EntityBlock {
         protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
                 if (level.isClientSide()) {
                         if (level.getBlockEntity(pos) instanceof TownCenterBlockEntity blockEntity) {
-                                Minecraft.getInstance().setScreen(new TownNameScreen(blockEntity));
+                                TownData data = blockEntity.importDataFromTextFile();
+
+                                String nameToSend = "unnamed_town";
+                                int popToSend = 0;
+
+                                if (data != null) {
+                                        nameToSend = data.getTownName();
+                                        popToSend = data.getPopulation();
+                                }
+
+                                Minecraft.getInstance().setScreen(new TownNameScreen(
+                                        blockEntity,
+                                        nameToSend,
+                                        popToSend
+                                ));
                         }
                 }
                 return InteractionResult.sidedSuccess(level.isClientSide());

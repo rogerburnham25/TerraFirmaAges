@@ -75,7 +75,7 @@ public class BonfireBlockEntity extends BlockEntity {
         if (blockEntity.burnTimeRemaining > 0 && isInTown(level, pos)) {
             // newPos = (BlockPos.getX() + 1, BlockPos.getY(), BlockPos.getZ());
             
-            //if (Math.random() <= 1.0) {
+            if (Math.random() <= 0.4) {
                 if (level instanceof ServerLevel serverLevel) {
                     long timeOfDay = serverLevel.getDayTime() % 24000;
                     if (timeOfDay == 18000) {
@@ -88,7 +88,7 @@ public class BonfireBlockEntity extends BlockEntity {
                         );
                     }
                 }
-            //}
+            }
         }
     }
 

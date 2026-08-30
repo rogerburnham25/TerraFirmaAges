@@ -14,7 +14,9 @@ public class ServerPacketHandler {
                 BlockEntity be = level.getBlockEntity(payload.pos());
             
                 if (be instanceof TownCenterBlockEntity town_center_statue) {
-                    town_center_statue.updateTownNameAndSave(payload.newName(), payload.count());
+                    town_center_statue.setTownName(payload.newName());
+                    town_center_statue.exportDataToTextFile();
+                    level.sendBlockUpdated(payload.pos(), town_center_statue.getBlockState(), town_center_statue.getBlockState(), 3);
                 } else {
                     System.out.println("Warning: Received update packet but TownCenterBlockEntity was not found at " + payload.pos());
                 }

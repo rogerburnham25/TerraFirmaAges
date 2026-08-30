@@ -6,19 +6,17 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.network.PacketDistributor;
-import com.terrafirmaagescore.TerraFirmaAgesCore;
 import com.terrafirmaagescore.block.custom.TownCenterBlockEntity;
-import com.terrafirmaagescore.block.custom.Town_Center_Statue;
-import net.minecraft.world.level.block.state.BlockState;
+import com.terrafirmaagescore.block.custom.TownData;
+
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import com.terrafirmaagescore.network.UpdateTownNamePayload;
 import net.minecraft.world.level.Level;
-import java.io.File;
 import java.nio.file.Files;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.StringWidget;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.terrafirmaagescore.client.screen.TownNameScreen;
 
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -28,82 +26,127 @@ public class TownNameScreen extends Screen {
     private Button submitButton;
     private Button yesButton;
     private Button noButton;
+    private Button RenameButton;
+    private String loadedTownName;
+    private int loadedPopulation;
     public static String ColonyName;
     private StringWidget currentName;
+    private StringWidget currentPopulation;
     public final TownCenterBlockEntity blockEntity;
     private static int messageDelay = 0;
     private static String pendingName = null;
+    //private String population;
 
-    public TownNameScreen(TownCenterBlockEntity blockEntity) {
+    public TownNameScreen(TownCenterBlockEntity blockEntity, String townName, int population) {
         super(Component.literal("Set Town Name"));
         this.blockEntity = blockEntity;
+        this.loadedTownName = townName;
+        this.loadedPopulation = population;
     }
 
     @Override
     public void init() {
-        System.out.println(blockEntity.named == true);
-        if (blockEntity.named == false) {
+        super.init();
+        if (this.blockEntity != null) {
+            if (this.loadedTownName != null && !this.loadedTownName.isEmpty() && !"unnamed_town".equals(this.loadedTownName)) {
+                blockEntity.named = true;
+
+                this.currentName = new StringWidget(
+                    this.width / 2 - 200,
+                    this.height / 2 - 35,
+                    200,
+                    20,
+                    Component.literal("Town Name: " + this.loadedTownName),
+                    this.font
+                );
+                this.addRenderableWidget(currentName);
+
+                this.currentPopulation = new StringWidget(
+                    this.width / 2,
+                    this.height / 2 - 35,
+                    200,
+                    20,
+                    Component.literal("Town Population: " + this.loadedPopulation),
+                    this.font
+                );
+
+                this.addRenderableWidget(currentPopulation);
+                
+                this.RenameButton = Button.builder(
+                    Component.literal("rename"),
+                    buttom -> this.rename()
+                )
+                .bounds(
+                    this.width / 2 - 200,
+                    this.height / 2,
+                    200, 
+                    20
+                )
+                .build();
+                this.addRenderableWidget(this.RenameButton);
+            } else {
+                blockEntity.named = false;
+                this.inputField = new EditBox(this.font, this.width / 2 - 100, this.height / 2 - 10, 200, 20, Component.literal("Input"));
+                this.inputField.setMaxLength(256);
+                this.addRenderableWidget(this.inputField);
+                this.setInitialFocus(this.inputField);
+
+                this.submitButton = Button.builder(
+                    Component.literal("Submit"),
+                    button -> this.submit()
+                )
+                .bounds(
+                    this.width / 2 - 100,
+                    this.height / 2 + 20,
+                    200,
+                    20
+                )
+                .build();
+                this.addRenderableWidget(this.submitButton);
+            }
+        }
+    }
+
+    public void rename() {
+        try {
             super.init();
+            this.removeWidget(this.RenameButton);
+            this.removeWidget(this.currentName);
+            this.removeWidget(this.currentPopulation);
 
-            this.inputField = new EditBox(this.font, this.width / 2 - 100, this.height / 2 - 10, 200, 20, Component.literal("Input"));
-            this.inputField.setMaxLength(256);
-            this.addRenderableWidget(this.inputField);
-            this.setInitialFocus(this.inputField);
-
-            this.submitButton = Button.builder(
-                Component.literal("Submit"),
-                button -> this.submit()
+            this.yesButton = Button.builder(
+                Component.literal("Yes, Rename"),
+                button -> this.yes()
             )
             .bounds(
-                this.width / 2 - 100,
+                this.width / 2 - 200,
                 this.height / 2 + 20,
                 200,
                 20
             )
             .build();
 
-            this.addRenderableWidget(this.submitButton);
-            
-            blockEntity.named = true;
-            System.out.println(blockEntity.named == true);
-        } else if (blockEntity.named == true) {
-            try {
-                super.init();
+            this.noButton = Button.builder(
+                Component.literal("Cancel Rename"),
+                button -> this.onClose()
+            )
+            .bounds(
+                this.width / 2 - 200,
+                this.height / 2 - 20,
+                200,
+                20
+            )
+            .build();
 
-                this.yesButton = Button.builder(
-                    Component.literal("Yes, Rename"),
-                    button -> this.yes()
-                )
-                .bounds(
-                    this.width / 2 - 200,
-                    this.height / 2 + 20,
-                    200,
-                    20
-                )
-                .build();
-
-                this.noButton = Button.builder(
-                    Component.literal("Cancel Rename"),
-                    button -> this.onClose()
-                )
-                .bounds(
-                    this.width / 2 - 200,
-                    this.height / 2 - 20,
-                    200,
-                    20
-                )
-                .build();
-
-                this.addRenderableWidget(this.yesButton);
-                this.addRenderableWidget(this.noButton);
+            this.addRenderableWidget(this.yesButton);
+            this.addRenderableWidget(this.noButton);
                 
-                Minecraft client = minecraft.getInstance();
-                if (client.player != null) {
-                    //client.player.sendSystemMessage(Component.literal("Town renamed to " + minifiedJson));
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+            Minecraft client = minecraft.getInstance();
+            if (client.player != null) {
+                //client.player.sendSystemMessage(Component.literal("Town renamed to " + minifiedJson));
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -131,20 +174,16 @@ public class TownNameScreen extends Screen {
             .build();
 
             this.addRenderableWidget(this.submitButton);
+            // this.currentName = new StringWidget(
+            //     this.width / 2 - 100,
+            //     this.height / 2 - 35,
+            //     200,
+            //     20,
+            //     Component.literal("Current Town Name: " + townName),
+            //     this.font
+            // );
 
-            String content = Files.readString(blockEntity.file.toPath());
-            String minifiedJson = content.replaceAll("\\s", " ").trim();
-
-            this.currentName = new StringWidget(
-                this.width / 2 - 100,
-                this.height / 2 - 35,
-                200,
-                20,
-                Component.literal("Current Town Name: " + minifiedJson),
-                this.font
-            );
-
-            this.addRenderableWidget(this.currentName);
+            //this.addRenderableWidget(this.currentName);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -154,18 +193,13 @@ public class TownNameScreen extends Screen {
         String ColonyName = this.inputField.getValue();
         Level level = this.blockEntity.getLevel();
         BlockPos pos = this.blockEntity.getBlockPos();
-        String count = "0";
 
         if (level != null && level.getBlockEntity(pos) instanceof TownCenterBlockEntity blockEntity) {
-            count = String.valueOf(
-                Town_Center_Statue.colonistsInColony(level, pos)
-            );
 
             PacketDistributor.sendToServer(
                 new UpdateTownNamePayload(
                     this.blockEntity.getBlockPos(),
-                    ColonyName,
-                    count
+                    ColonyName
                 )
             );
 
