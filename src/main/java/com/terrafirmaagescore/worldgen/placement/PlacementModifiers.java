@@ -1,7 +1,6 @@
 package com.terrafirmaagescore.worldgen.placement;
 
 import com.mojang.serialization.MapCodec;
-import com.terrafirmaagescore.TerraFirmaAgesCore;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.levelgen.placement.PlacementModifier;
 import net.minecraft.world.level.levelgen.placement.PlacementModifierType;

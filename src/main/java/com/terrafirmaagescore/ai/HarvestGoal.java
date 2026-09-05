@@ -1,7 +1,6 @@
 package com.terrafirmaagescore.ai;
 
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.Collections;
@@ -22,22 +21,11 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.BlockPos;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Blocks;
 
-import net.dries007.tfc.common.blockentities.CropBlockEntity;
-import net.minecraft.util.Mth;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
-import net.minecraft.world.level.storage.loot.providers.number.LootNumberProviderType;
-import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
-import net.dries007.tfc.common.items.TFCItems;
 import java.util.HashMap;
-
-import software.bernie.geckolib.animatable.GeoEntity;
 
 public class HarvestGoal extends Goal {
 
@@ -134,7 +122,7 @@ public class HarvestGoal extends Goal {
                 center.offset(20, 5, 20))) {
 
             BlockState state = NeolithicColonist.level().getBlockState(pos);
-            BlockEntity blockEntity = NeolithicColonist.level().getBlockEntity(pos);
+            //BlockEntity blockEntity = NeolithicColonist.level().getBlockEntity(pos);
 
             if (state.getBlock() instanceof CropBlock cropblock) {
                     int age = state.getValue(cropblock.getAgeProperty());

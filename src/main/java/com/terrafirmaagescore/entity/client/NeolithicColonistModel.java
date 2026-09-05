@@ -9,7 +9,7 @@ public class NeolithicColonistModel extends GeoModel<NeolithicColonistEntity> {
 
     @Override
     public ResourceLocation getModelResource(NeolithicColonistEntity entity) {
-        System.out.println("USING TERRAFIRMAAGESCORE MODEL");
+        //System.out.println("USING TERRAFIRMAAGESCORE MODEL");
         return ResourceLocation.fromNamespaceAndPath(
             "terrafirmaagescore",
             "geo/neolithic_colonist.geo.json"

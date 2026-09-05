@@ -29,11 +29,15 @@ import com.terrafirmaagescore.client.screen.TownNameScreen;
 import net.minecraft.client.Minecraft;
 import com.terrafirmaagescore.entity.custom.NeolithicColonistEntity;
 import net.minecraft.world.phys.AABB;
+import com.terrafirmaagescore.util.RoadDetector;
+import com.terrafirmaagescore.util.ColonyNetworkManager;
 import java.util.List;
+//import static com.terrafirmaagescore.Block.custom.TownCenterBlockEntity.roads;
 
 
 public class Town_Center_Statue extends Block implements EntityBlock {
         public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
+        //private int Colonies;
         // public final int count;
 
     public Town_Center_Statue(BlockBehaviour.Properties properties) {
@@ -69,6 +73,7 @@ public class Town_Center_Statue extends Block implements EntityBlock {
                 Level level = context.getLevel();
                 // Check if the block above is air so the top half fits
                 if (pos.getY() < level.getMaxBuildHeight() - 1 && level.getBlockState(pos.above()).canBeReplaced(context)) {
+                        //Colonies++;
                         return this.defaultBlockState().setValue(HALF, DoubleBlockHalf.LOWER);
                 }
                 return null;
@@ -77,6 +82,7 @@ public class Town_Center_Statue extends Block implements EntityBlock {
         @Override
         public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, net.minecraft.world.entity.player.Player player) {
                 if (!level.isClientSide()) {
+                        //Colonies--;
                         DoubleBlockHalf half = state.getValue(HALF);
                         BlockPos otherPos = (half == DoubleBlockHalf.LOWER) ? pos.above() : pos.below();
                         BlockState otherState = level.getBlockState(otherPos);
@@ -161,8 +167,27 @@ public class Town_Center_Statue extends Block implements EntityBlock {
                         BlockPos abovePos = pos.above();
                         level.setBlock(abovePos, this.defaultBlockState().setValue(HALF, DoubleBlockHalf.UPPER), 2);
                         level.blockUpdated(pos, this);
+
+                        if (state.hasProperty(HALF) && state.getValue(HALF) == DoubleBlockHalf.LOWER) {
+                                ColonyNetworkManager.registerStatue(pos);
+                                //System.out.println("[TownMod] Successfully registered statue LOWER base block at: " + pos.toShortString());
+                        }
                 }
                 super.setPlacedBy(level, pos, state, placer, stack);
+        }
+
+        @Override
+        public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+                if (!state.is(newState.getBlock())) {
+                        if (!level.isClientSide()) {
+            // Automatically stop tracking this statue when broken
+                                if (state.hasProperty(HALF) && state.getValue(HALF) == DoubleBlockHalf.LOWER) {
+                                        ColonyNetworkManager.unregisterStatue(pos);
+                                        System.out.println("[TownMod] Unregistered statue LOWER base block at: " + pos.toShortString());
+                                }
+                        }
+                }
+                super.onRemove(state, level, pos, newState, isMoving);
         }
 
         @Override

@@ -3,23 +3,19 @@ package com.terrafirmaagescore.block.custom;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.LinkedList;
 import com.terrafirmaagescore.block.entity.ModBlockEntities;
-import com.terrafirmaagescore.block.custom.Farm_Block;
-import com.terrafirmaagescore.TerraFirmaAgesCore;
 import net.minecraft.world.level.block.Block;
 
 import java.util.*;
 
 public class PerimeterDetectorBlockEntity extends BlockEntity {
-    private static final int MAX_BLOCKS_SCAN = 1000;
+    //private static final int MAX_BLOCKS_SCAN = 1000;
 
     public PerimeterDetectorBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlockEntities.PERIMETER_DETECTOR.get(), pos, state);

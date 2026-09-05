@@ -4,10 +4,10 @@ import javax.annotation.Nullable;
 
 import com.terrafirmaagescore.entity.ModEntities;
 import com.terrafirmaagescore.ai.HarvestGoal;
+//import com.terrafirmaagescore.ai.LumberingGoal;
 
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
@@ -29,12 +29,10 @@ import net.minecraft.nbt.CompoundTag;
 
 import net.neoforged.neoforge.items.ItemStackHandler;
 
-import software.bernie.geckolib.animatable.GeoAnimatable;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.util.GeckoLibUtil;
 import software.bernie.geckolib.animation.AnimatableManager;
 import software.bernie.geckolib.animation.AnimationController;
-import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -129,6 +127,7 @@ public class NeolithicColonistEntity extends Animal implements GeoEntity {
                 stack -> stack.is(Items.BEDROCK), false));
                 
         this.goalSelector.addGoal(4, new HarvestGoal(this));
+        //this.goalSelector.addGoal(4, new LumberingGoal(this));
         this.goalSelector.addGoal(5, new FollowParentGoal(this, 1.25F));
 
         this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 1.0F));

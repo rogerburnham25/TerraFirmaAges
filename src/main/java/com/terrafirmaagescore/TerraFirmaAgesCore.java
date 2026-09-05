@@ -94,6 +94,28 @@ public class TerraFirmaAgesCore {
             UpdateTownNamePayload.STREAM_CODEC,
             ServerPacketHandler::handleTownNameUpdate
         );
+        registrar.playToServer(
+            com.terrafirmaagescore.network.RequestRoadCheckPayload.TYPE,
+            com.terrafirmaagescore.network.RequestRoadCheckPayload.STREAM_CODEC,
+            (payload, context) -> {
+                context.enqueueWork(() -> {
+                    if (context.player() instanceof net.minecraft.server.level.ServerPlayer serverPlayer) {
+                        com.terrafirmaagescore.network.ServerPacketHandler.handleRoadCheck(payload, serverPlayer);
+                    }
+                });
+            }
+        );
+
+    // 3. Add the Road Sync Packet (Server -> Client)
+        registrar.playToClient(
+            com.terrafirmaagescore.network.SyncRoadsPayload.TYPE,
+            com.terrafirmaagescore.network.SyncRoadsPayload.STREAM_CODEC,
+            (payload, context) -> {
+                context.enqueueWork(() -> {
+                    com.terrafirmaagescore.network.ClientPacketHandler.handleSyncRoads(payload);
+                });
+            }
+        );
     }
 
     private void gatherData(net.neoforged.neoforge.data.event.GatherDataEvent event) {
