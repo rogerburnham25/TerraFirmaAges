@@ -17,6 +17,7 @@ public class ModEventBusEvents {
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(ModEntities.NEOLITHIC_COLONIST.get(), NeolithicColonistEntity.createAttributes().build());
+        event.put(ModEntities.TRADE_CARAVAN_ENTITY.get(), NeolithicColonistEntity.createAttributes().build());
     }
 
     @SubscribeEvent
