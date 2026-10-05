@@ -4,7 +4,11 @@ import javax.annotation.Nullable;
 
 import com.terrafirmaagescore.entity.ModEntities;
 import com.terrafirmaagescore.ai.HarvestGoal;
+<<<<<<< HEAD
+import com.terrafirmaagescore.ai.LumberingGoal;
+=======
 //import com.terrafirmaagescore.ai.LumberingGoal;
+>>>>>>> 8a7c24c9d8aa22be924b8b11d9a9fa2f4b0ae031
 
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.server.level.ServerLevel;
@@ -127,7 +131,7 @@ public class NeolithicColonistEntity extends Animal implements GeoEntity {
                 stack -> stack.is(Items.BEDROCK), false));
                 
         this.goalSelector.addGoal(4, new HarvestGoal(this));
-        //this.goalSelector.addGoal(4, new LumberingGoal(this));
+        this.goalSelector.addGoal(4, new LumberingGoal(this));
         this.goalSelector.addGoal(5, new FollowParentGoal(this, 1.25F));
 
         this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 1.0F));
